@@ -1,0 +1,16 @@
+{
+    "train_geojson_file": "data/Fields_2024.json",
+    "classify_geojson_file": "data/fields2024.json",
+    "new_geojson_file": "data/newfields2024.json",
+    "model": "models/last.joblib",
+    "year": 2024,
+    "persecond": 20,
+    "log_path": ""
+    "database": {
+        "dbname": "geoservice",
+        "user": "gis",
+        "password": "1234",
+        "host": "localhost",
+        "port": 5432
+    }
+}
