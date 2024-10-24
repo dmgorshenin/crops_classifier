@@ -62,7 +62,7 @@
 ### Настройка конфигурации
 
 В проекте присутствует файл конфигурации configuration.json, который необходимо настроить. Пример параметров:
-    ```bash
+    ```
     {
         "train_geojson_file": "path/to/train.geojson",
         "classify_geojson_file": "path/to/classify.geojson",
@@ -77,7 +77,7 @@
             "user": "<name>",
             "password": "<пароль>"
         }
-    }
+    }```
 
 Параметры конфигурации:
 
