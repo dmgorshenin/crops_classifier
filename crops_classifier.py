@@ -245,7 +245,7 @@ class AgroClassifierService:
             model = models[best_index]
             logger.info(
                 f"The best model is trained with accuracy {accuracys[best_index][0]:.4f}")
-            model_path = f"models/model_{datetime.datetime.today().strftime('%Y-%m-%d_%H-%M-%S')}.joblib"
+            model_path = f"models/model_{datetime.datetime.today().strftime('%Y-%m-%d_%H-%M-%S')}_{int(accuracys[best_index][0]*100)}.joblib"
             dump(model, model_path, compress=9)
             dump(model, 'models/last.joblib', compress=9)
             return model, accuracys[best_index][0]
