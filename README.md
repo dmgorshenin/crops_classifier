@@ -62,20 +62,8 @@
 ### Настройка конфигурации
 
 В проекте присутствует файл конфигурации configuration.json, который необходимо настроить. Пример параметров:
-    ```bash
-        "train_geojson_file": "path/to/train.geojson",
-        "classify_geojson_file": "path/to/classify.geojson",
-        "new_geojson_file": "path/to/output.geojson",
-        "model": "path/to/model",
-        "year": 2024,
-        "persecond": 5,
-        "database": {
-            "host": "localhost",
-            "port": 5432,
-            "dbname": "geoservice",
-            "user": "<name>",
-            "password": "<пароль>"
-        }
+    ![image](https://github.com/user-attachments/assets/4038d457-7490-4045-925f-ed30afb1fe0b)
+
         
 
 Параметры конфигурации:
