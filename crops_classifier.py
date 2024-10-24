@@ -27,7 +27,7 @@ logging.basicConfig(
         logging.StreamHandler()
     ])
 
-logger = logging.getLogger('CropsClassifier')
+logger = logging.getLogger(__name__)
 
 
 class AgroClassifierService:
@@ -44,12 +44,15 @@ class AgroClassifierService:
             config_file: Путь к файлу конфигурации JSON.
         """
         self.config = self.__load_config__(config_file)
+
         if not self.config.get('year'):
             raise ValueError('The year is not specified in the configuration')
+
         self.label_dict = {'озимые': 0, 'многолетние травы': 1,
                            'ранние яровые': 2, 'поздние яровые': 3, 'пар': 4}
         self.label_inv = {0: 'озимые', 1: 'многолетние травы',
                           2: 'ранние яровые', 3: 'поздние яровые', 4: 'пар'}
+
         logger.info(f"Initialization AgroClassifier")
 
     def __load_config__(self, config_file: str) -> dict:
@@ -77,7 +80,7 @@ class AgroClassifierService:
 
     def __create_split__(self, features: list, labels: list, random_state: int) -> \
             tuple[np.array, np.array, np.array, np.array]:
-        """ 
+        """
         Разделяет данные на обучающую и тестовую выборки.
 
         Args:
@@ -110,16 +113,15 @@ class AgroClassifierService:
         afs = AgroFieldService(self.config)
         afs.clear_data()
         try:
-            await afs.compute_ndvi(geojson_file)
+            gdf = await afs.compute_ndvi(geojson_file)
         except TimeoutError as e:
             logger.error(f"Error loading data: {e}")
             raise
         except RuntimeError:
             pass
-        gdf = gpd.read_file(geojson_file)
         gdf['Date'] = year
         df_series = afs.read_data()
-        afs.clear_data()
+        # afs.clear_data()
         return gdf, df_series
 
     async def __download_ndvi__(self, geojson_file: str, year: int) -> tuple[gpd.GeoDataFrame, pd.DataFrame]:
@@ -171,8 +173,13 @@ class AgroClassifierService:
 
             newX = np.arange(veg_end_date - veg_start_date)
             X_ordinals -= veg_start_date
-            s = InterpolatedUnivariateSpline(
-                np.sort(X_ordinals), Y[np.argsort(X_ordinals)], k=1)
+            sorted_indices = np.argsort(X_ordinals)
+            X_ordinals = X_ordinals[sorted_indices]
+            Y = Y[sorted_indices]
+            if X_ordinals[0] > 20:
+                X_ordinals = np.insert(X_ordinals, 0, 0)
+                Y = np.insert(Y, 0, 0)
+            s = InterpolatedUnivariateSpline(X_ordinals, Y, k=1)
             newY = s(newX)
 
             features.append(newY)
@@ -200,7 +207,8 @@ class AgroClassifierService:
             tuple[RandomForestClassifier, float]: Кортеж из обученной модели RandomForestClassifier и её точности.
         """
         if not path.exists(self.config['train_geojson_file']):
-            raise FileNotFoundError('Training file was not found')
+            raise FileNotFoundError(
+                f"Training file with path {self.config['train_geojson_file']} was not found")
         geojson_file = self.config['train_geojson_file']
         year = self.config['year']
         logger.info(
@@ -214,7 +222,7 @@ class AgroClassifierService:
                 df_series, gdf, year, flag=True)
             logger.info("Feature extraction and data labeling completed")
 
-            counter = 10
+            counter = 5
             models = []
             accuracys = np.zeros((counter, 1), dtype='float32')
 
@@ -228,7 +236,8 @@ class AgroClassifierService:
                 accuracy = accuracy_score(y_test, preds)
                 accuracys[i] = accuracy
                 models.append(rfc_model)
-                logger.info(f"Model {i+1} trained with accuracy {accuracy:.4f}")
+                logger.info(
+                    f"Model {i+1} trained with accuracy {accuracy:.4f}")
 
             best_index = np.argmax(accuracys)
             model = models[best_index]
@@ -251,9 +260,10 @@ class AgroClassifierService:
             Exception: Если произошла ошибка во время классификации данных.
         """
         if not path.exists(self.config['classify_geojson_file']):
-            raise FileNotFoundError('Training file was not found')
-        if not path.exists(self.config['new_geojson_file']):
-            raise FileNotFoundError('New path to file was not found')
+            raise FileNotFoundError(
+                f"Classify file with path {self.config['classify_geojson_file']} was not found")
+        if not self.config['new_geojson_file']:
+            raise FileNotFoundError('New path to file was not not specified')
         geojson_file = self.config['classify_geojson_file']
         year = self.config['year']
         model_path = self.config['model']

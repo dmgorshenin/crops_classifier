@@ -71,7 +71,8 @@ class AgroFieldService:
             cursor.execute("SELECT version();")
             record = cursor.fetchone()
             if record:
-                logger.info(f"Database connection: {record} established successfully")
+                logger.info(
+                    f"Database connection: {record} established successfully")
         except OperationalError as e:
             logger.error(f"Database connection error: {e}")
             raise
@@ -127,7 +128,6 @@ class AgroFieldService:
                         return
 
                     task['result'] = await response.text()
-                    logger.info(task['result'])
                     task['status'] = 'done'
                     sentinel_data = json.loads(task['result'])
                     agro_field_id = task['ID']
@@ -136,11 +136,11 @@ class AgroFieldService:
 
             except JSONDecodeError as e:
                 logger.error(f"JSONDecoder error for {url}: {e}")
-                retries += 1
+                break
 
             except aiohttp.ClientError as e:
                 logger.error(f"{url} request error: {e}")
-                retries += 1
+                break
         logger.error(
             f"The maximum number of retries for {url} has been reached. Pass...")
         task['result'] = None
@@ -166,21 +166,21 @@ class AgroFieldService:
                 running_tasks = len(
                     [i for i in url_tasks if i['status'] == 'fetch'])
                 is_tasks_to_wait = len(
-                    [i for i in url_tasks if (i['status'] != 'done' or i['status'] != 'failed')])
+                    [i for i in url_tasks if i['status'] != 'done' and i['status'] != 'failed'])
 
                 if n < len(url_tasks) and running_tasks < self.persecond:
                     url_tasks[n]['status'] = 'fetch'
                     asyncio.create_task(self.__fetch__(session, url_tasks[n]))
                     n += 1
-                    # logger.info(f"Scheduled task {n}. Running: {running_tasks}, Remaining: {is_tasks_to_wait}")
 
                 if running_tasks >= self.persecond:
                     await asyncio.sleep(1)
 
-                completed_or_failed_tasks = len([i for i in url_tasks if (i['status'] == 'done' or i['status'] == 'failed')])
+                completed_or_failed_tasks = len(
+                    [i for i in url_tasks if i['status'] == 'done' or i['status'] == 'failed'])
                 progress.n = completed_or_failed_tasks
                 progress.refresh()
-                
+
                 if is_tasks_to_wait != 0:
                     await asyncio.sleep(0.1)
                 else:
@@ -195,6 +195,7 @@ class AgroFieldService:
         :param geojson_file: Путь к geojson файлу с геометрией полей.
         :return: GeoDataFrame с геометрией и добавленными данными NDVI.
         """
+        logger.info(f"Read file {geojson_file}")
         gdf = gpd.read_file(geojson_file)
         urls = []
 
@@ -228,7 +229,6 @@ class AgroFieldService:
                                 date['basicStats']['mean'],
                                 date['basicStats']['min'],
                                 date['basicStats']['max']))
-            # logger.info(f"{len(sentinel_data['C0'])} NDVI records saved for AgroFieldID {agro_field_id}")
             conn.commit()
         except Exception as e:
             logger.error(

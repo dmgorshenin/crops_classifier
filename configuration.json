@@ -1,11 +1,10 @@
 {
-    "train_geojson_file": "data/Fields_2024.json",
-    "classify_geojson_file": "data/fields2024.json",
-    "new_geojson_file": "data/newfields2024.json",
+    "train_geojson_file": "data/saratov_crops_2023.json",
+    "classify_geojson_file": "",
+    "new_geojson_file": "",
     "model": "models/last.joblib",
-    "year": 2024,
+    "year": 2023,
     "persecond": 20,
-    "log_path": ""
     "database": {
         "dbname": "geoservice",
         "user": "gis",
@@ -14,3 +13,4 @@
         "port": 5432
     }
 }
+
