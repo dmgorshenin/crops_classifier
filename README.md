@@ -68,19 +68,23 @@
 
 Параметры конфигурации:
 
- > train_geojson_file: Путь к GeoJSON файлу для обучения модели;
- > classify_geojson_file: Путь к GeoJSON файлу для классификации данных;
- > new_geojson_file: Путь для сохранения классифицированных данных;
- > model: Путь к файлу модели классификатора;
- > year: Год, для которого выполняется обработка данных;
- > persecond: Количество запросов в секунду к прокси для получения рядов NDVI;
- > database: Параметры подключения к базе данных PostgreSQL.
+ * train_geojson_file: Путь к GeoJSON файлу для обучения модели;
+ * classify_geojson_file: Путь к GeoJSON файлу для классификации данных;
+ * new_geojson_file: Путь для сохранения классифицированных данных;
+ * model: Путь к файлу модели классификатора;
+ * year: Год, для которого выполняется обработка данных;
+ * persecond: Количество запросов в секунду к прокси для получения рядов NDVI;
+ * database: Параметры подключения к базе данных PostgreSQL.
 
-Замечания
+Примечания
 
  При работе с базой данных в разных операционных системах запросы могут отличаться:
- > Для Windows: INSERT INTO geoservice.agrofieldndvi ...
- > Для Linux: INSERT INTO agrofieldndvi ...
+  * Для Windows: INSERT INTO geoservice.agrofieldndvi ...
+  * Для Linux: INSERT INTO agrofieldndvi ...
+### Запуск
+Перед запуск необходимо настроить файл конфигурации.
+   ```bash
+   python crops_classifier.py [--config .path/to/config] [--mode <train or classify>]
 
 ### Выходные данные
 
