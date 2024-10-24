@@ -36,7 +36,7 @@ class AgroClassifierService:
     обучение модели классификации и классификацию данных на основе обученной модели.
     """
 
-    def __init__(self, config_file: str) -> None:
+    def __init__(self, config_file: str, cleaning: str) -> None:
         """
         Инициализация AgroClassifier и загрузка конфигурации из указанного файла.
 
@@ -44,7 +44,7 @@ class AgroClassifierService:
             config_file: Путь к файлу конфигурации JSON.
         """
         self.config = self.__load_config__(config_file)
-
+        self.clean_flag = True if cleaning == 'y' else False
         if not self.config.get('year'):
             raise ValueError('The year is not specified in the configuration')
 
@@ -111,17 +111,19 @@ class AgroClassifierService:
             tuple[gpd.GeoDataFrame, pd.DataFrame]: Кортеж из GeoDataFrame и DataFrame с данными NDVI.
         """
         afs = AgroFieldService(self.config)
-        afs.clear_data()
-        try:
-            gdf = await afs.compute_ndvi(geojson_file)
-        except TimeoutError as e:
-            logger.error(f"Error loading data: {e}")
-            raise
-        except RuntimeError:
-            pass
+        if self.clean_flag:
+            afs.clear_data()
+            try:
+                gdf = await afs.compute_ndvi(geojson_file)
+            except TimeoutError as e:
+                logger.error(f"Error loading data: {e}")
+                raise
+            except RuntimeError:
+                pass
+        else:
+            gdf = gpd.read_file(geojson_file)
         gdf['Date'] = year
         df_series = afs.read_data()
-        # afs.clear_data()
         return gdf, df_series
 
     async def __download_ndvi__(self, geojson_file: str, year: int) -> tuple[gpd.GeoDataFrame, pd.DataFrame]:
@@ -300,9 +302,9 @@ class AgroClassifierService:
             raise
 
 
-def main(config_path, mode):
+def main(config_path, mode, cleaning):
     start_time = time.time()
-    ac = AgroClassifierService(config_path)
+    ac = AgroClassifierService(config_path, cleaning)
 
     if mode == 'train':
         try:
@@ -321,10 +323,12 @@ def main(config_path, mode):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='AgroClassifier Service')
-    parser.add_argument('--config', type=str, required=False, default='configuration.json',
-                        help='Path to the configuration file (configuration.json is used by default)')
+    parser.add_argument('--config', type=str, required=False, default='./configs/default.json',
+                        help='Path to the configuration file (default.json is used by default)')
     parser.add_argument('--mode', type=str, required=False, choices=['classify', 'train'], default='train',
                         help='Running a method (classify - classification, train - training)')
+    parser.add_argument('--cleaning', type=str, required=False, choices=['y', 'n'], default='y',
+                        help='Clears the database before operation and loads new NDVI records, otherwise leaves old data (y - yes, n - no)')
 
     args = parser.parse_args()
-    main(args.config, args.mode)
+    main(args.config, args.mode, args.cleaning)

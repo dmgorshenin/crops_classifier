@@ -136,11 +136,15 @@ class AgroFieldService:
 
             except JSONDecodeError as e:
                 logger.error(f"JSONDecoder error for {url}: {e}")
-                break
+                task['result'] = None
+                task['status'] = 'failed'
+                return
 
             except aiohttp.ClientError as e:
                 logger.error(f"{url} request error: {e}")
-                break
+                task['result'] = None
+                task['status'] = 'failed'
+                return
         logger.error(
             f"The maximum number of retries for {url} has been reached. Pass...")
         task['result'] = None

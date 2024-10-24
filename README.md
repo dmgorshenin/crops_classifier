@@ -85,7 +85,7 @@
 
 Перед запуском необходимо настроить файл конфигурации.
 
-      `python crops_classifier.py --config .path/to/config --mode train or classify`
+      python crops_classifier.py --config .path/to/config --mode [train or classify] --cleaning [y or n]
       
 Конфиг можно опционально не указывать, тогда применится конфиг по умолчанию. Также по умолчанию mode =  train 
 
