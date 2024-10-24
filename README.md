@@ -82,9 +82,10 @@
   * Для Windows: INSERT INTO geoservice.agrofieldndvi ...
   * Для Linux: INSERT INTO agrofieldndvi ...
 ### Запуск
-Перед запуск необходимо настроить файл конфигурации.
-   ```bash
-   python crops_classifier.py [--config .path/to/config] [--mode <train or classify>]
+
+Перед запуском необходимо настроить файл конфигурации.
+      ```bash
+      python crops_classifier.py [--config .path/to/config] [--mode train or classify]
 
 ### Выходные данные
 
