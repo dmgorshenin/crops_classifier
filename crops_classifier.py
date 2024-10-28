@@ -1,7 +1,7 @@
 import numpy as np
 import geopandas as gpd
 import pandas as pd
-import matplotlib as plt
+import matplotlib.pyplot as plt
 import datetime
 import json
 import asyncio
