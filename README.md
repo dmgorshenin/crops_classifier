@@ -13,6 +13,7 @@
    ```bash
    sudo apt -y install postgresql postgresql-contrib
    sudo apt update
+   ```
 
 #### Создание виртуального окружения и установка пакетов:
 
@@ -20,6 +21,7 @@
     ```bash
     conda create --name <env> python=3.9
     conda activate <env>
+    ```
 
 
  2. Установите необходимые пакеты:
@@ -31,6 +33,7 @@
     pip install asyncio
     pip install argparse
     conda install matplotlib
+    ```
 
 
 
@@ -57,6 +60,7 @@
         "NDVIMax" double precision
     );
     ALTER TABLE agrofieldndvi OWNER TO <name>;
+    ```
 
 
 
@@ -86,20 +90,24 @@
 
 Перед запуском необходимо настроить файл конфигурации.
 
-    «`{python}<>{python crops_classifier.py --config .path/to/config --mode [train or classify] --cleaning [y or n]}«`
+    ```python
+    python crops_classifier.py --config .path/to/config --mode [train or classify] --cleaning [y or n]
+    ```
 
    * --config: путь к файлу конфигурации
    * --mode: обучение или классификация 
    * --cleaning: очистка базы данных (во время классификации рекомендуется не очищать БД)
 
+Конфиг можно опционально не указывать, тогда применится конфиг по умолчанию. Также по умолчанию mode =  train
+
 Для запуска построения графика NDVI конкретного поля:
 
-    «`{python}<>{python creating_graphs.py --config .path/to/config --id 1234}«`
+    ```python
+    python creating_graphs.py --config .path/to/config --id 1234
+    ```
 
    * --config: путь к файлу конфигурации
-   * --id: идентификатор поля
-
-Конфиг можно опционально не указывать, тогда применится конфиг по умолчанию. Также по умолчанию mode =  train 
+   * --id: идентификатор поля 
 
 ### Выходные данные
 
