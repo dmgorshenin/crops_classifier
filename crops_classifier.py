@@ -11,6 +11,7 @@ import argparse
 from collections import defaultdict
 from joblib import dump, load
 from os import path
+from tqdm import tqdm
 from asyncio import TimeoutError
 from scipy.interpolate import InterpolatedUnivariateSpline
 from sklearn.model_selection import train_test_split
@@ -159,11 +160,11 @@ class AgroClassifierService:
         veg_start_date = datetime.date(year, 4, 1).toordinal()
         veg_end_date = datetime.date(year, 9, 1).toordinal()
 
-        for key in df_series['ID'].unique():
+        for key in tqdm(df_series['ID'].unique(), desc='Preprocessing data'):
             X = df_series.loc[df_series['ID'] ==
-                              key, 'Date'].to_numpy().flatten()
+                            key, 'Date'].to_numpy().flatten()
             Y = df_series.loc[df_series['ID'] ==
-                              key, 'NDVI'].to_numpy().flatten()
+                            key, 'NDVI'].to_numpy().flatten()
 
             X_ordinals = np.array([i.toordinal() for i in X[::-1]])
             Y = Y[::-1]
@@ -287,14 +288,16 @@ class AgroClassifierService:
             asyncio.run(asyncio.sleep(2))
             new_features, obj_ids = self.__process_ndvi_data__(
                 df_series, gdf, year, flag=False)
-
             preds = model.predict(new_features)
             preds_decoded = [self.label_inv[pred] for pred in preds]
-            gdf['Name'] = None
+            gdf['CropClass'] = None
 
-            for obj_id in obj_ids:
-                indx = obj_ids.index(obj_id)
-                gdf.loc[gdf['ID'] == obj_id, 'Name'] = preds_decoded[indx]
+            # for obj_id in tqdm(obj_ids, desc='Writing classes'):
+            #     indx = obj_ids.index(obj_id)
+            #     gdf.loc[gdf['ID'] == obj_id, 'CropClass'] = preds_decoded[indx]
+
+            for obj_id, pred in tqdm(zip(obj_ids, preds_decoded), desc='Writing classes', total=len(obj_ids)):
+                gdf.loc[(gdf['ID'] == obj_id), 'CropClass'] = pred
 
             gdf.drop(columns=['Date'], inplace=True)
             gdf.to_file(self.config['new_geojson_file'], driver='GeoJSON')
