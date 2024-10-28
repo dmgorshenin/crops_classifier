@@ -290,11 +290,8 @@ class AgroClassifierService:
                 df_series, gdf, year, flag=False)
             preds = model.predict(new_features)
             preds_decoded = [self.label_inv[pred] for pred in preds]
+            gdf['ID'] = gdf['ID'].astype(int)
             gdf['CropClass'] = None
-
-            # for obj_id in tqdm(obj_ids, desc='Writing classes'):
-            #     indx = obj_ids.index(obj_id)
-            #     gdf.loc[gdf['ID'] == obj_id, 'CropClass'] = preds_decoded[indx]
 
             for obj_id, pred in tqdm(zip(obj_ids, preds_decoded), desc='Writing classes', total=len(obj_ids)):
                 gdf.loc[(gdf['ID'] == obj_id), 'CropClass'] = pred
