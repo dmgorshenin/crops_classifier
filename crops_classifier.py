@@ -226,7 +226,7 @@ class AgroClassifierService:
                 df_series, gdf, year, flag=True)
             logger.info("Feature extraction and data labeling completed")
 
-            counter = 5
+            counter = 10
             models = []
             accuracys = np.zeros((counter, 1), dtype='float32')
 
@@ -272,7 +272,7 @@ class AgroClassifierService:
         if not path.exists(self.config['model']):
             raise FileNotFoundError(
                 f"Model file {self.config['model']} not found")
-        
+
         geojson_file = self.config['classify_geojson_file']
         year = self.config['year']
         model_path = self.config['model']

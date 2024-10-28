@@ -30,6 +30,7 @@
     conda install psycopg2
     pip install asyncio
     pip install argparse
+    conda install matplotlib
 
 
 
