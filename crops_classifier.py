@@ -304,7 +304,7 @@ class AgroClassifierService:
             logger.error(f"Error during classification: {e}")
             raise
 
-    def plot_NDVI(features: np.array, labels: np.array) -> None:
+    def plot_NDVI(self, features: np.array, labels: np.array) -> None:
         """Создает график средних рядов NDVI для каждой культуры
 
         Args:
