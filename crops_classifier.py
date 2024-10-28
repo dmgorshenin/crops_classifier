@@ -312,7 +312,7 @@ class AgroClassifierService:
             labels (np.array): Массив меток
         """
         culture_ndvi = defaultdict(list)
-        for feature, label in zip(features, labels):
+        for feature, label in zip(features, np.array([self.label_inv[label] for label in labels])):
             culture_ndvi[label].append(feature)
 
         average_ndvi = {}

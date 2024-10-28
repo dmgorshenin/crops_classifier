@@ -1,4 +1,4 @@
-import matplotlib as plt
+import matplotlib.pyplot as plt
 import numpy as np
 import datetime
 import argparse
@@ -21,7 +21,7 @@ def plot_NDVI_id(id: int, config: str) -> None:
     try:
         _, df_series = ac.__download_ndvi__(ac.config['train_geojson_file'])
     except Exception as error:
-        raise
+        raise error
 
     for key in df_series['ID'].unique():
         if key == id:
