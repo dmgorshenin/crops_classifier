@@ -1,12 +1,14 @@
 import numpy as np
 import geopandas as gpd
 import pandas as pd
+import matplotlib as plt
 import datetime
 import json
 import asyncio
 import logging
 import time
 import argparse
+from collections import defaultdict
 from joblib import dump, load
 from os import path
 from asyncio import TimeoutError
@@ -245,6 +247,7 @@ class AgroClassifierService:
             model = models[best_index]
             logger.info(
                 f"The best model is trained with accuracy {accuracys[best_index][0]:.4f}")
+            self.plot_NDVI(features, labels)
             model_path = f"models/model_{datetime.datetime.today().strftime('%Y-%m-%d_%H-%M-%S')}_{int(accuracys[best_index][0]*100)}.joblib"
             dump(model, model_path, compress=9)
             dump(model, 'models/last.joblib', compress=9)
@@ -265,19 +268,19 @@ class AgroClassifierService:
             raise FileNotFoundError(
                 f"Classify file with path {self.config['classify_geojson_file']} was not found")
         if not self.config['new_geojson_file']:
-            raise FileNotFoundError('New path to file was not not specified')
+            raise FileNotFoundError('New path to file was not specified')
+        if not path.exists(self.config['model']):
+            raise FileNotFoundError(
+                f"Model file {self.config['model']} not found")
+        
         geojson_file = self.config['classify_geojson_file']
         year = self.config['year']
         model_path = self.config['model']
         logger.info(f"Data classification for file {geojson_file}")
 
         try:
-            if path.exists(model_path):
-                model = load(model_path)
-                logger.info(f"Model loaded from {model_path}")
-            else:
-                raise FileNotFoundError(
-                    f"Model file {model_path} not found")
+            model = load(model_path)
+            logger.info(f"Model loaded from {model_path}")
 
             gdf, df_series = asyncio.run(
                 self.__download_ndvi__(geojson_file, year))
@@ -301,6 +304,33 @@ class AgroClassifierService:
             logger.error(f"Error during classification: {e}")
             raise
 
+    def plot_NDVI(features: np.array, labels: np.array) -> None:
+        """Создает график средних рядов NDVI для каждой культуры
+
+        Args:
+            features (np.array): Массив признаков
+            labels (np.array): Массив меток
+        """
+        culture_ndvi = defaultdict(list)
+        for feature, label in zip(features, labels):
+            culture_ndvi[label].append(feature)
+
+        average_ndvi = {}
+        for culture, ndvi_series in culture_ndvi.items():
+            average_ndvi[culture] = np.mean(ndvi_series, axis=0)
+
+        plt.figure(figsize=(15, 8))
+        for culture, avg_ndvi in average_ndvi.items():
+            plt.plot(avg_ndvi, label=culture)
+
+        plt.title('Средние ряды NDVI для каждой культуры')
+        plt.xlabel('Дни')
+        plt.ylabel('NDVI')
+        plt.legend(loc='upper right')
+        plt.grid(True)
+        plt.savefig(
+            f"images/NDVI_{datetime.datetime.today().strftime('%Y-%m-%d_%H-%M-%S')}.png")
+
 
 def main(config_path, mode, cleaning):
     start_time = time.time()
@@ -322,7 +352,7 @@ def main(config_path, mode, cleaning):
 
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser(description='AgroClassifier Service')
+    parser = argparse.ArgumentParser(description='AgroClassifierService')
     parser.add_argument('--config', type=str, required=False, default='./configs/default.json',
                         help='Path to the configuration file (default.json is used by default)')
     parser.add_argument('--mode', type=str, required=False, choices=['classify', 'train'], default='train',
