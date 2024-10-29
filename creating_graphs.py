@@ -69,6 +69,7 @@ def plot_NDVI_id(id: int, config: str) -> None:
     plt.title(f'Ряд NDVI для id = {id}')
     plt.xlabel('Дни')
     plt.ylabel('NDVI')
+    plt.grid(True)
     path = f"images/NDVI_for_{id}_{datetime.datetime.today().strftime('%Y-%m-%d_%H-%M-%S')}.png"
     plt.savefig(path)
     print(f'The graph is saved in {path}')
