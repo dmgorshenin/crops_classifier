@@ -125,6 +125,7 @@ class AgroClassifierService:
                 pass
         else:
             gdf = gpd.read_file(geojson_file)
+        gdf['ID'] = gdf['ID'].astype(int)
         gdf['Date'] = year
         df_series = afs.read_data()
         return gdf, df_series
@@ -162,9 +163,9 @@ class AgroClassifierService:
 
         for key in tqdm(df_series['ID'].unique(), desc='Preprocessing data'):
             X = df_series.loc[df_series['ID'] ==
-                            key, 'Date'].to_numpy().flatten()
+                              key, 'Date'].to_numpy().flatten()
             Y = df_series.loc[df_series['ID'] ==
-                            key, 'NDVI'].to_numpy().flatten()
+                              key, 'NDVI'].to_numpy().flatten()
 
             X_ordinals = np.array([i.toordinal() for i in X[::-1]])
             Y = Y[::-1]
@@ -290,7 +291,6 @@ class AgroClassifierService:
                 df_series, gdf, year, flag=False)
             preds = model.predict(new_features)
             preds_decoded = [self.label_inv[pred] for pred in preds]
-            gdf['ID'] = gdf['ID'].astype(int)
             gdf['CropClass'] = None
 
             for obj_id, pred in tqdm(zip(obj_ids, preds_decoded), desc='Writing classes', total=len(obj_ids)):
@@ -323,7 +323,8 @@ class AgroClassifierService:
         for culture, avg_ndvi in average_ndvi.items():
             plt.plot(avg_ndvi, label=culture)
 
-        plt.title('Средние ряды NDVI для каждой культуры')
+        plt.title(
+            f"Средние ряды NDVI для {path.basename(self.config['train_geojson_file'])}")
         plt.xlabel('Дни')
         plt.ylabel('NDVI')
         plt.legend(loc='upper right')
