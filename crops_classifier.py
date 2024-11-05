@@ -259,7 +259,7 @@ class AgroClassifierService:
             logger.error(f"Error during model training: {e}")
             raise
 
-    def classify_data(self) -> None:
+    def predict_data(self) -> None:
         """
         Классифицирует данные NDVI на основе обученной модели и сохраняет результаты в новый geojson файл.
 
@@ -342,9 +342,9 @@ def main(config_path, mode, cleaning):
             ac.model_training()
         except Exception as e:
             logger.error(f"An error occurred: {e}")
-    if mode == 'classify':
+    if mode == 'predict':
         try:
-            ac.classify_data()
+            ac.predict_data()
         except Exception as e:
             logger.error(f"An error occurred: {e}")
 
@@ -356,8 +356,8 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='AgroClassifierService')
     parser.add_argument('--config', type=str, required=False, default='./configs/default.json',
                         help='Path to the configuration file (default.json is used by default)')
-    parser.add_argument('--mode', type=str, required=False, choices=['classify', 'train'], default='train',
-                        help='Running a method (classify - classification, train - training)')
+    parser.add_argument('--mode', type=str, required=False, choices=['predict', 'train'], default='train',
+                        help='Running a method (predict - classification, train - training)')
     parser.add_argument('--cleaning', type=str, required=False, choices=['y', 'n'], default='y',
                         help='Clears the database before operation and loads new NDVI records, otherwise leaves old data (y - yes, n - no)')
 
