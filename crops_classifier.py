@@ -39,15 +39,16 @@ class AgroClassifierService:
     обучение модели классификации и классификацию данных на основе обученной модели.
     """
 
-    def __init__(self, config_file: str, cleaning: str) -> None:
+    def __init__(self, config_file: str, cleaning: bool) -> None:
         """
         Инициализация AgroClassifier и загрузка конфигурации из указанного файла.
 
         Args:
             config_file: Путь к файлу конфигурации JSON.
+            cleaning: Флаг очистки: если true - то бд перед работой скрипта очищается и в нее загружаются новые данные NDVI, иначе - очистка не призводится.
         """
         self.config = self.__load_config__(config_file)
-        self.clean_flag = True if cleaning == 'y' else False
+        self.clean_flag = cleaning
         if not self.config.get('year'):
             raise ValueError('The year is not specified in the configuration')
 
@@ -259,7 +260,7 @@ class AgroClassifierService:
             logger.error(f"Error during model training: {e}")
             raise
 
-    def classify_data(self) -> None:
+    def predict_data(self) -> None:
         """
         Классифицирует данные NDVI на основе обученной модели и сохраняет результаты в новый geojson файл.
 
@@ -333,7 +334,7 @@ class AgroClassifierService:
             f"images/NDVI_{datetime.datetime.today().strftime('%Y-%m-%d_%H-%M-%S')}.png")
 
 
-def main(config_path, mode, cleaning):
+def main(config_path: str, mode: str, cleaning: bool):
     start_time = time.time()
     ac = AgroClassifierService(config_path, cleaning)
 
@@ -342,9 +343,9 @@ def main(config_path, mode, cleaning):
             ac.model_training()
         except Exception as e:
             logger.error(f"An error occurred: {e}")
-    if mode == 'classify':
+    if mode == 'predict':
         try:
-            ac.classify_data()
+            ac.predict_data()
         except Exception as e:
             logger.error(f"An error occurred: {e}")
 
@@ -356,10 +357,10 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='AgroClassifierService')
     parser.add_argument('--config', type=str, required=False, default='./configs/default.json',
                         help='Path to the configuration file (default.json is used by default)')
-    parser.add_argument('--mode', type=str, required=False, choices=['classify', 'train'], default='train',
-                        help='Running a method (classify - classification, train - training)')
+    parser.add_argument('--mode', type=str, required=False, choices=['predict', 'train'], default='train',
+                        help='Running a method (predict - classification, train - training)')
     parser.add_argument('--cleaning', type=str, required=False, choices=['y', 'n'], default='y',
                         help='Clears the database before operation and loads new NDVI records, otherwise leaves old data (y - yes, n - no)')
 
     args = parser.parse_args()
-    main(args.config, args.mode, args.cleaning)
+    main(args.config, args.mode, True if args.cleaning == 'y' else False)
