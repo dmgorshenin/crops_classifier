@@ -1,0 +1,15 @@
+{
+    "train_geojson_file": "./data/astrahan_crops_2023_WM.json",
+    "classify_geojson_file": "",
+    "predicted_geojson_file": "./data/astrakhan_predicted.json",
+    "model": "./models/model_Astrakhan_72.joblib",
+    "year": 2023,
+    "persecond": 25,
+    "database": {
+        "dbname": "geoservice",
+        "user": "gis",
+        "password": "1234",
+        "host": "localhost",
+        "port": 5432
+    }
+}

@@ -25,7 +25,7 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 
-class AgroFieldService:
+class NDVIParserService:
     """
     Сервис для работы с данными NDVI.
     Выполняет загрузку данных, их обработку, сохранение в базу данных и чтение из базы данных.

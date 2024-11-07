@@ -17,7 +17,7 @@ from scipy.interpolate import InterpolatedUnivariateSpline
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import accuracy_score
 from sklearn.ensemble import RandomForestClassifier
-from ndvi_download_service import AgroFieldService
+from ndvi_parser import NDVIParserService
 
 TODAY = datetime.datetime.today().strftime('%Y-%m-%d_%H-%M')
 LOG_PATH = f'logs/crops_{TODAY}.log'
@@ -33,7 +33,7 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 
-class AgroClassifierService:
+class CropsClassifierService:
     """
     Класс AgroClassifier отвечает за загрузку и обработку данных NDVI,
     обучение модели классификации и классификацию данных на основе обученной модели.
@@ -114,7 +114,7 @@ class AgroClassifierService:
         Returns:
             tuple[gpd.GeoDataFrame, pd.DataFrame]: Кортеж из GeoDataFrame и DataFrame с данными NDVI.
         """
-        afs = AgroFieldService(self.config)
+        afs = NDVIParserService(self.config)
         if self.clean_flag:
             afs.clear_data()
             try:
@@ -270,8 +270,8 @@ class AgroClassifierService:
         if not path.exists(self.config['classify_geojson_file']):
             raise FileNotFoundError(
                 f"Classify file with path {self.config['classify_geojson_file']} was not found")
-        if not self.config['new_geojson_file']:
-            raise FileNotFoundError('New path to file was not specified')
+        if not self.config['predicted_geojson_file']:
+            raise FileNotFoundError('Path to predicted file was not specified')
         if not path.exists(self.config['model']):
             raise FileNotFoundError(
                 f"Model file {self.config['model']} not found")
@@ -298,7 +298,7 @@ class AgroClassifierService:
                 gdf.loc[(gdf['ID'] == obj_id), 'CropClass'] = pred
 
             gdf.drop(columns=['Date'], inplace=True)
-            gdf.to_file(self.config['new_geojson_file'], driver='GeoJSON')
+            gdf.to_file(self.config['predicted_geojson_file'], driver='GeoJSON')
             logger.info(f"Classification completed for file {geojson_file}")
 
         except Exception as e:
@@ -336,7 +336,7 @@ class AgroClassifierService:
 
 def main(config_path: str, mode: str, cleaning: bool):
     start_time = time.time()
-    ac = AgroClassifierService(config_path, cleaning)
+    ac = CropsClassifierService(config_path, cleaning)
 
     if mode == 'train':
         try:
@@ -357,7 +357,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='AgroClassifierService')
     parser.add_argument('--config', type=str, required=False, default='./configs/default.json',
                         help='Path to the configuration file (default.json is used by default)')
-    parser.add_argument('--mode', type=str, required=False, choices=['predict', 'train'], default='train',
+    parser.add_argument('--mode', type=str, required=False, choices=['predict', 'train'],
                         help='Running a method (predict - classification, train - training)')
     parser.add_argument('--cleaning', type=str, required=False, choices=['y', 'n'], default='y',
                         help='Clears the database before operation and loads new NDVI records, otherwise leaves old data (y - yes, n - no)')

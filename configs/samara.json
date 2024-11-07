@@ -1,7 +1,7 @@
 {
-    "train_geojson_file": "/home/gis/data/saratov_crops_2023.json",
-    "classify_geojson_file": "/home/gis/data/Crops/ForPrediction/saratov_for_predict_2023.json",
-    "predicted_geojson_file": "./data/Saratov/saratov_predicted.json",
+    "train_geojson_file": "./data/Fields_2023.json",
+    "classify_geojson_file": "",
+    "predicted_geojson_file": "./data/samara_predicted.json",
     "model": "./models/model_SamObl_88.joblib",
     "year": 2023,
     "persecond": 25,

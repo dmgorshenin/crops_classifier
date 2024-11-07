@@ -5,7 +5,7 @@ import argparse
 import pandas as pd
 from psycopg2 import pool
 from scipy.interpolate import InterpolatedUnivariateSpline
-from crops_classifier import AgroClassifierService
+from crops_classifier import CropsClassifierService
 
 
 def plot_NDVI_id(id: int, config: str) -> None:
@@ -14,7 +14,7 @@ def plot_NDVI_id(id: int, config: str) -> None:
     Args:
         id (int): Идентификатор поля
     """
-    ac = AgroClassifierService(config, False)
+    ac = CropsClassifierService(config, False)
     veg_start_date = datetime.date(ac.config['year'], 4, 1).toordinal()
     veg_end_date = datetime.date(ac.config['year'], 9, 1).toordinal()
 
