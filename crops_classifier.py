@@ -81,7 +81,7 @@ class AgroClassifierService:
             logger.error(f"Error loading configuration: {e}")
             raise
 
-    def __create_split__(self, features: list, labels: list, random_state: int) -> \
+    def _create_split_(self, features: list, labels: list, random_state: int) -> \
             tuple[np.array, np.array, np.array, np.array]:
         """
         Разделяет данные на обучающую и тестовую выборки.
@@ -130,7 +130,7 @@ class AgroClassifierService:
         df_series = afs.read_data()
         return gdf, df_series
 
-    async def __download_ndvi__(self, geojson_file: str, year: int) -> tuple[gpd.GeoDataFrame, pd.DataFrame]:
+    async def _download_ndvi_(self, geojson_file: str, year: int) -> tuple[gpd.GeoDataFrame, pd.DataFrame]:
         """
         Обертка для асинхронной загрузки данных NDVI.
 
@@ -144,7 +144,7 @@ class AgroClassifierService:
         logger.info(f"Loading NDVI for file {geojson_file} and year {year}")
         return await self.__download_ndvi_async__(geojson_file, year)
 
-    def __process_ndvi_data__(self, df_series: pd.DataFrame, gdf: gpd.GeoDataFrame, year: int, flag: bool) -> \
+    def _process_ndvi_data_(self, df_series: pd.DataFrame, gdf: gpd.GeoDataFrame, year: int, flag: bool) -> \
             tuple[np.array, (np.array, list)]:
         """
         Обрабатывает данные NDVI, выполняет интерполяцию и формирует признаки и метки.
@@ -221,10 +221,10 @@ class AgroClassifierService:
             f"Starting model training for file {geojson_file} and year {year}")
 
         try:
-            gdf, df_series = asyncio.run(self.__download_ndvi__(
+            gdf, df_series = asyncio.run(self._download_ndvi_(
                 geojson_file, year))
             asyncio.run(asyncio.sleep(2))
-            features, labels = self.__process_ndvi_data__(
+            features, labels = self._process_ndvi_data_(
                 df_series, gdf, year, flag=True)
             logger.info("Feature extraction and data labeling completed")
 
@@ -233,7 +233,7 @@ class AgroClassifierService:
             accuracys = np.zeros((counter, 1), dtype='float32')
 
             for i in range(counter):
-                X_train, X_test, y_train, y_test = self.__create_split__(
+                X_train, X_test, y_train, y_test = self._create_split_(
                     features, labels, i)
                 rfc = RandomForestClassifier(
                     max_depth=13, n_estimators=143, random_state=i)
@@ -285,9 +285,9 @@ class AgroClassifierService:
             logger.info(f"Model loaded from {model_path}")
 
             gdf, df_series = asyncio.run(
-                self.__download_ndvi__(geojson_file, year))
+                self._download_ndvi_(geojson_file, year))
             asyncio.run(asyncio.sleep(2))
-            new_features, obj_ids = self.__process_ndvi_data__(
+            new_features, obj_ids = self._process_ndvi_data_(
                 df_series, gdf, year, flag=False)
             preds = model.predict(new_features)
             preds_decoded = [self.label_inv[pred] for pred in preds]
@@ -304,7 +304,7 @@ class AgroClassifierService:
             logger.error(f"Error during classification: {e}")
             raise
 
-    def plot_NDVI(self, features: np.array, labels: np.array) -> None:
+    def _plot_NDVI_(self, features: np.array, labels: np.array) -> None:
         """Создает график средних рядов NDVI для каждой культуры
 
         Args:

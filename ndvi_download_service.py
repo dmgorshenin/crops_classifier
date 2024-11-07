@@ -80,7 +80,7 @@ class AgroFieldService:
             cursor.close()
             self.connection_pool.putconn(conn)
 
-    def __process_geometry__(self, geom) -> str:
+    def _process_geometry_(self, geom) -> str:
         """
         Обрабатывает геометрию для формирования корректного WKT.
 
@@ -98,7 +98,7 @@ class AgroFieldService:
         else:
             return buffered_wkt
 
-    async def __fetch__(self, session: aiohttp.ClientSession, task: dict) -> None:
+    async def _fetch_(self, session: aiohttp.ClientSession, task: dict) -> None:
         """
         Асинхронно выполняет HTTP-запрос для получения данных NDVI и сохраняет их в базу данных.
 
@@ -131,7 +131,7 @@ class AgroFieldService:
                     task['status'] = 'done'
                     sentinel_data = json.loads(task['result'])
                     agro_field_id = task['ID']
-                    await self.__save_ndvi_data__(agro_field_id, sentinel_data)
+                    await self._save_ndvi_data_(agro_field_id, sentinel_data)
                     return
 
             except JSONDecodeError as e:
@@ -151,7 +151,7 @@ class AgroFieldService:
         task['status'] = 'failed'
         return
 
-    async def __fetch_all__(self, session: aiohttp.ClientSession, urls: list[dict]) -> list[dict]:
+    async def _fetch_all_(self, session: aiohttp.ClientSession, urls: list[dict]) -> list[dict]:
         """
         Асинхронно выполняет все задачи в очереди по загрузке данных NDVI.
 
@@ -174,7 +174,7 @@ class AgroFieldService:
 
                 if n < len(url_tasks) and running_tasks < self.persecond:
                     url_tasks[n]['status'] = 'fetch'
-                    asyncio.create_task(self.__fetch__(session, url_tasks[n]))
+                    asyncio.create_task(self._fetch_(session, url_tasks[n]))
                     n += 1
 
                 if running_tasks >= self.persecond:
@@ -205,7 +205,7 @@ class AgroFieldService:
 
         for _, row in gdf.iterrows():
             geom = shape(row['geometry'])
-            processed_wkt = self.__process_geometry__(geom)
+            processed_wkt = self._process_geometry_(geom)
             url = self.NDVI_FIS_URL.format(processed_wkt, self.year)
             urls.append({'_ID': row['ID'], 'url': url})
 
@@ -213,10 +213,10 @@ class AgroFieldService:
             f"NDVI parsing begins for {self.year} with fields {len(urls)}.")
 
         async with aiohttp.ClientSession(connector=aiohttp.TCPConnector(ssl=False)) as session:
-            await self.__fetch_all__(session, urls)
+            await self._fetch_all_(session, urls)
         return gdf
 
-    async def __save_ndvi_data__(self, agro_field_id: int, sentinel_data: dict) -> None:
+    async def _save_ndvi_data_(self, agro_field_id: int, sentinel_data: dict) -> None:
         """
         Сохраняет полученные данные NDVI в базу данных.
 
